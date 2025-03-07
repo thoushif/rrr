@@ -1,0 +1,24 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model RecordRequest {
+  id                String   @id @default(uuid())
+  userId            String
+  requestId         String   @unique
+  originalUrl       String
+  videoTitle        String?
+  bsOriginalVideoId String?
+  status            String   @default("pending")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  bsReactionVideoId String?
+
+  @@index([userId])
+  @@index([status])
+}
