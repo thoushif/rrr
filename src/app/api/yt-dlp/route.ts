@@ -33,8 +33,7 @@ export async function POST(request: Request) {
    try {
     await new Promise((resolve, reject) => {
       console.log("working on converting the video");
-      const ytDlpProcess = spawn(
-        "C:\\Users\\tshaik\\AppData\\Roaming\\Python\\Python313\\scripts\\yt-dlp",
+      const ytDlpProcess = spawn("yt-dlp",
         [
           "-f", "mp4",          // Force MP4 format
           "--merge-output-format", "mp4",  // Ensure merged output is MP4

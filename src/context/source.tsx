@@ -6,9 +6,11 @@ interface SourceContextType {
   initialUrl: string;
   playbackUrl: string;
   requestId: string;
+  originalVideoDownloadtatus: string;
   setInitialUrl: (url: string) => void;
   setPlaybackUrl: (url: string) => void;
   setRequestId: (id: string) => void;
+  setOriginalVideoDownloadtatus: (status: string) => void;
   reset: () => void;
 }
 
@@ -18,11 +20,13 @@ export function SourceProvider({ children }: { children: React.ReactNode }) {
   const [requestId, setRequestId] = useState<string>("");
   const [initialUrl, setInitialUrl] = useState<string>("");
   const [playbackUrl, setPlaybackUrl] = useState<string>("");
-    
+  const [originalVideoDownloadtatus, setOriginalVideoDownloadtatus] = useState<string>("pristine");
+  
   const reset = () => {
     setInitialUrl('');
     setPlaybackUrl('');
     setRequestId('');
+    setOriginalVideoDownloadtatus("pristine")
   };
 
   return (
@@ -31,9 +35,11 @@ export function SourceProvider({ children }: { children: React.ReactNode }) {
         initialUrl,
         playbackUrl,
         requestId,
+        originalVideoDownloadtatus,
         setInitialUrl,
         setPlaybackUrl,
         setRequestId,
+        setOriginalVideoDownloadtatus,
         reset
       }}
     >

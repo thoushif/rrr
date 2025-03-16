@@ -1,7 +1,9 @@
+"use client"
 import { useEffect, useRef, useState, memo } from "react";
-import VideoPlayer from "./original-video-player";
-import { CameraView } from "./recorder";
+  import { CameraView } from "./recorder";
 import RecordingOptions, { BunnyVideo } from "../home/recording-options";
+import VideoPlayer from "./original-video-player";
+import { useSource } from "@/context/source";
 
 
 
@@ -9,9 +11,9 @@ const ResizablePanes = () => {
   const handleWidth = "6px";
   const [isResizing, setIsResizing] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
-  //   const { playbackUrl } = useSource();
-  const playbackUrl =
-    "https://iframe.mediadelivery.net/embed/391358/b971ef9a-fa0b-4da8-825a-a8956cc65f0d";
+    const { playbackUrl } = useSource();
+  // const playbackUrl =
+  //   "https://iframe.mediadelivery.net/embed/391358/b971ef9a-fa0b-4da8-825a-a8956cc65f0d";
   const startResizing = () => setIsResizing(true);
 
   useEffect(() => {
@@ -62,7 +64,7 @@ const ResizablePanes = () => {
         {/* <VideoPlayer url={playbackUrl} />
         
         */}
-         <BunnyVideo />
+         <VideoPlayer url={playbackUrl} autoplay={true}/>
       </div>
     </div>
   );

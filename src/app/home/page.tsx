@@ -1,8 +1,9 @@
 "use client";
-import ResizablePanes from "@/components/reaction-recorder/recorder-home";
+import OriginalDownloadCheck from "@/components/home/original-download";
+
 
 const Home = () => {
-  return <div className="w-full h-full"><ResizablePanes /></div>;
+  return <div className="w-full h-full"><OriginalDownloadCheck /></div>;
 };
 
 export default Home;

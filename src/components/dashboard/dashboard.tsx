@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import VideoPlayer from "../reaction-recorder/original-video-player";
 
 interface RecordRequest {
   id: string;
@@ -147,10 +148,7 @@ const RequestCard: React.FC<{ request: RecordRequest }> = ({ request }) => {
             <p className="text-sm text-gray-500">{request.status}</p>
           {/* if the status is completed, show the reaction video */}
           {request.status === "completed" && request.bsReactionVideoId && (
-            <iframe
-              id="bunny-stream-embed"
-              src={`https://iframe.mediadelivery.net/embed/391358/${request.bsReactionVideoId}`}
-            ></iframe>
+            <VideoPlayer url={`https://iframe.mediadelivery.net/embed/391358/${request.bsReactionVideoId}`} autoplay={false}/>
           )}
         </div>
       </div>
@@ -167,3 +165,4 @@ const RenderingStatus: React.FC<{ status: string }> = ({ status }) => {
 };
 
 export default Dashboard;
+  

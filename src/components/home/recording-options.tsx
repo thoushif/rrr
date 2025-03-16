@@ -1,3 +1,4 @@
+"use client"
 import React, { useEffect, useState } from "react";
 import { useSource } from "@/context/source";
 import uuidByString from "uuid-by-string";
@@ -110,34 +111,7 @@ export const BunnyVideo = () => {
   };
 
   useEffect(() => {
-    const createMp4Video = async () => {
-      if (!initialUrl) return;
-      try {
-        const response = await fetch("/api/upload-bunny", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            videoTitle: initialUrl,
-            initialUrl,
-            userId: "userid",
-          }),
-        });
-        if (response.ok) {
-          const result = await response.json();
-          setRequestId(result.requestId);
-          setPlaybackUrl(result.playbackUrl);
-        }
-      } catch (err) {
-        setError("Failed to fetch preview");
-        console.error("Error fetching metadata:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    createMp4Video();
+  
     // clean up useEffect on unmount
     return () => {
       reset();
@@ -159,7 +133,7 @@ export const BunnyVideo = () => {
        
           {playbackUrl && !loading && (
          
-            <VideoPlayer url={playbackUrl} />
+            <VideoPlayer url={playbackUrl} autoplay={true}/>
          
         )}
    </>

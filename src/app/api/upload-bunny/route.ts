@@ -7,6 +7,7 @@ import {
   cleanupVideoFiles,
   generatePlaybackUrl,
   listVideosInLibrary,
+  waitForVideoProcessing,
 } from "@/lib/bunny";
 import fs from "fs";
 import { PrismaClient } from "@prisma/client";
@@ -56,15 +57,17 @@ export async function POST(req: Request) {
     }
 
 
+    const newRecordRequest = {
+      userId,
+      requestId,
+      originalUrl: initialUrl,
+      videoTitle,
+      status: "pending",
+    };
+    console.log("new requst rec", newRecordRequest)
     // Create new record in database
     await prisma.recordRequest.create({
-      data: {
-        userId,
-        requestId,
-        originalUrl: initialUrl,
-        videoTitle,
-        status: "pending",
-      },
+      data: newRecordRequest,
     });
 
     // Convert video using yt-dlp
@@ -106,7 +109,7 @@ export async function POST(req: Request) {
     // Upload to Bunny Stream
     const { guid: videoId } = await createBunnyVideo(requestId);
     await uploadVideoToBunny(videoId, videoPath);
-
+    await waitForVideoProcessing(videoId);
     // Update database with video ID
     await prisma.recordRequest.update({
       where: { requestId },
