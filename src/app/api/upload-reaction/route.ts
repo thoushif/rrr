@@ -66,6 +66,15 @@ export async function POST(req: Request) {
           body: buffer,
         });
 
+    // update the record request with the video id
+    await prisma.recordRequest.update({
+      where: { requestId },
+      data: {
+        bsReactionVideoId: videoId,
+        updatedAt: new Date(),
+        status: "reaction-upload-started",
+      },
+    });
         if (!uploadResponse.ok) {
           throw new Error("Failed to upload video");
         }
@@ -94,15 +103,6 @@ export async function POST(req: Request) {
 
     // we need to save this to worker with the videoId
     
-    // update the record request with the video id
-    await prisma.recordRequest.update({
-      where: { requestId },
-      data: {
-        bsReactionVideoId: "videoId",
-        updatedAt: new Date(),
-        status: "submitted",
-      },
-    });
     await videoQueue.add("process-video", { jobId: requestId });
     
      return NextResponse.json({

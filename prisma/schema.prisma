@@ -18,6 +18,7 @@ model RecordRequest {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   bsReactionVideoId String?
+  bsMergedVideoId String?
 
   @@index([userId])
   @@index([status])

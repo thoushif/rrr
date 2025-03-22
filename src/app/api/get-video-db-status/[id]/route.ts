@@ -24,7 +24,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         
         const status = await checkStatus();
         console.log("Checking video status at attempt number", attempts, " with status: ", status);
-        if (status === "finished" || status === "failed" || status === "completed") {
+        if (status?.indexOf("finished") != -1 || status === "failed" || status === "completed") {
           console.log("Video status, updated to finished or failed at attempt number", attempts , " to status: ", status);
           return NextResponse.json({status:200});
         }

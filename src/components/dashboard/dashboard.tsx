@@ -18,6 +18,7 @@ interface RecordRequest {
   videoTitle: string;
   bsOriginalVideoId: string;
   bsReactionVideoId: string;
+  bsMergedVideoId: string;
   status: string;
 }
 const Dashboard: React.FC = () => {
@@ -36,11 +37,10 @@ const Dashboard: React.FC = () => {
   }, []);
 
   // Group requests by status
-  const completedRequests = requests.filter(req => req.status === "finished");
+  const completedRequests = requests.filter(req => req.status.indexOf("finished") != -1);
   const failedRequests = requests.filter(req => req.status === "failed");
   const inProgressRequests = requests.filter(
-    req => req.status !== "completed" && req.status !== "finished"
-  );
+    req => req.status.indexOf("finished") == -1);
 
   return (
     <div className="p-4">
@@ -147,14 +147,26 @@ const RequestCard: React.FC<{ request: RecordRequest }> = ({ request }) => {
          <div className="flex flex-col gap-4">
             <p className="text-sm text-gray-500">{request.status}</p>
           {/* if the status is completed, show the reaction video */}
+          {request.status === "original-upload-finished" && request.bsOriginalVideoId && (<>
           <h2>Original</h2>
-          {request.status === "finished" && request.bsOriginalVideoId && (
             <VideoPlayer url={`https://iframe.mediadelivery.net/embed/391358/${request.bsOriginalVideoId}`} autoplay={false}/>
-          )}
+            </>)}
+          {request.status === "reaction-upload-finished" && request.bsReactionVideoId && (<>
+          <h2>Original</h2>
+          <VideoPlayer url={`https://iframe.mediadelivery.net/embed/391358/${request.bsOriginalVideoId}`} autoplay={false}/>
           <h2>Your Reaction</h2>
-          {request.status === "reacted" && request.bsReactionVideoId && (
             <VideoPlayer url={`https://iframe.mediadelivery.net/embed/391358/${request.bsReactionVideoId}`} autoplay={false}/>
-          )}
+            </>)}
+
+            {request.status === "merged-upload-finished" && request.bsReactionVideoId && (<>
+            <h2>Final</h2>
+            <VideoPlayer url={`https://iframe.mediadelivery.net/embed/391358/${request.bsMergedVideoId}`} autoplay={false}/>
+            </>)}
+          <h2>Original</h2>
+          <VideoPlayer url={`https://iframe.mediadelivery.net/embed/391358/${request.bsOriginalVideoId}`} autoplay={false}/>
+          <h2>Your Reaction</h2>
+            <VideoPlayer url={`https://iframe.mediadelivery.net/embed/391358/${request.bsReactionVideoId}`} autoplay={false}/>
+            
         </div>
       </div>
     );
@@ -165,7 +177,7 @@ const RequestCard: React.FC<{ request: RecordRequest }> = ({ request }) => {
 
 const RenderingStatus: React.FC<{ status: string }> = ({ status }) => {
   return (
-     <div className={`w-4 h-4 rounded-full ${status === "finished" ? "bg-green-500" : status === "failed" ? "bg-red-500" : "bg-yellow-500"}`}></div>
+     <div className={`w-4 h-4 rounded-full ${status.indexOf("finished") != -1 ? "bg-green-500" : status === "failed" ? "bg-red-500" : "bg-yellow-500"}`}></div>
   );
 };
 

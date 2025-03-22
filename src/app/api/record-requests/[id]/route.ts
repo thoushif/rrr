@@ -41,6 +41,7 @@ export async function PUT(
         videoTitle: body.videoTitle,
         bsOriginalVideoId: body.bsOriginalVideoId,
         bsReactionVideoId: body.bsReactionVideoId || null,
+        bsMergedVideoId: body.bsMergedVideoId || null,
         status: body.status
       }
     });

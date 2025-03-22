@@ -35,6 +35,7 @@ export function CameraView() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [upperVideoDuration, setUpperVideoDuration] = useState(0);
 
+  const [downloadInProgress, setDownloadInProgress] = useState(false)
   const shouldContinueRecording = useRef(false);
 
   const handleStopRecording = () => {
@@ -148,6 +149,7 @@ export function CameraView() {
   };
 
   const handleDownload = async () => {
+    setDownloadInProgress(true)
     const videoUrl = mediaBlobUrl || uploadedVideo;
     if (videoUrl) {
       //tirgger api call to upload video
@@ -169,7 +171,10 @@ export function CameraView() {
       );
       const data = await uploadResponse.json();
       console.log(data);
-      router.push(`/dashboard`);
+      if (uploadResponse.ok) {
+        setDownloadInProgress(false)
+        router.push(`/dashboard`);
+      }
       //   const a = document.createElement("a");
       //   a.href = videoUrl;
       //   a.download = `reaction-${new Date().toISOString()}.mp4`;
@@ -266,6 +271,7 @@ export function CameraView() {
             onClick={handleDownload}
             variant="outline"
             size="sm"
+            disabled={downloadInProgress}
             className="absolute inline-flex items-center gap-2 top-4 right-4 z-10 bg-white/80 hover:bg-white"
           >
             <Check className="h-4 w-4" />

@@ -16,6 +16,8 @@ export async function GET(req: Request  ) {
       where: searchQuery,
       orderBy: { createdAt: 'desc' }
     });
+    console.log("===========");
+    console.log(records)
     return NextResponse.json(records);
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch records" }, { status: 500 });

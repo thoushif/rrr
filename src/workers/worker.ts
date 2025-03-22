@@ -15,7 +15,7 @@ const videoWorker = new Worker(
     const { jobId } = job.data;
     console.log(`Processing job: ${jobId}`);
     const request = await prisma.recordRequest.findUnique({
-      where: { requestId: jobId, status: "submitted" },
+      where: { requestId: jobId },
     });
     if (!request) {
       console.log(`Request ${jobId} not found or not submitted`);
@@ -34,6 +34,16 @@ const videoWorker = new Worker(
       "reaction",
       "video.mp4"
     );
+
+    if(!fs.existsSync(originalVideo)){
+      console.log(`original video does not exist at path, ${originalVideo}, quitting without processing`)
+      return
+    }
+    if(!fs.existsSync(reactionVideo)){
+      console.log(`reaction video does not exist at path, ${reactionVideo}, quitting without processing`)
+      return
+    }
+
     const outputDir = path.join(process.cwd(), "public", jobId, "merged");
     const outputPath = path.join(outputDir, "video.mp4");
 
@@ -41,29 +51,13 @@ const videoWorker = new Worker(
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    // const ffmpeg = spawn("ffmpeg", [
-    //   "-i",
-    //   originalVideo, // First input video
-    //   "-i",
-    //   reactionVideo, // Second input video
-    //   "-filter_complex",
-    //   "[0:v]scale=1280:720[main];[1:v]scale=320:240[pip];[main][pip]overlay=W-w-10:H-h-10", // Scale main video to 720p, PiP to 320x240, position at bottom-right
-    //   "-c:v",
-    //   "libx264", // Use H.264 codec
-    //   "-preset",
-    //   "fast", // Encoding preset
-    //   "-crf",
-    //   "23", // Quality setting (lower = better quality, higher file size)
-    //   outputPath, // Output file path
-    // ]);
-    const height = 420
     const ffmpeg = spawn("ffmpeg", [
       "-i",
       originalVideo, // First input video
       "-i",
       reactionVideo, // Second input video
       "-filter_complex",
-      `[0:v]scale=1280:${height}[main];[1:v]scale=1280:${height}[reaction];[main][reaction]vstack`, // Scale both videos to specified height and stack vertically
+      "[0:v]scale=1280:720[main];[1:v]scale=320:240[pip];[main][pip]overlay=W-w-10:H-h-10", // Scale main video to 720p, PiP to 320x240, position at bottom-right
       "-c:v",
       "libx264", // Use H.264 codec
       "-preset",
@@ -72,6 +66,22 @@ const videoWorker = new Worker(
       "23", // Quality setting (lower = better quality, higher file size)
       outputPath, // Output file path
     ]);
+    // const height = 420
+    // const ffmpeg = spawn("ffmpeg", [
+    //   "-i",
+    //   originalVideo, // First input video
+    //   "-i",
+    //   reactionVideo, // Second input video
+    //   "-filter_complex",
+    //   `[0:v]scale=1280:${height}[main];[1:v]scale=1280:${height}[reaction];[main][reaction]vstack`, // Scale both videos to specified height and stack vertically
+    //   "-c:v",
+    //   "libx264", // Use H.264 codec
+    //   "-preset",
+    //   "fast", // Encoding preset
+    //   "-crf",
+    //   "23", // Quality setting (lower = better quality, higher file size)
+    //   outputPath, // Output file path
+    // ]);
 
     // Handle process events
     ffmpeg.stdout.on("data", (data) => {
@@ -119,7 +129,7 @@ const videoWorker = new Worker(
         console.log("merged video uploaded to Bunny Stream");
         await prisma.recordRequest.update({
           where: { requestId: jobId  },
-          data: { status: "completed",bsReactionVideoId: videoId },
+          data: { status: "merged-upload-started", bsMergedVideoId: videoId },
         });
         const requestIdFolderPath = path.join(process.cwd(), "public", jobId);
         if (fs.existsSync(requestIdFolderPath)) {

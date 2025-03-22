@@ -5,13 +5,6 @@ import { PrismaClient } from "@prisma/client";
 import { getVideoFromBunny } from "@/lib/bunny";
 const prisma = new PrismaClient();
 
-// data looks like this:
-// {
-// 	"VideoLibraryId": 133,
-// 	"VideoGuid": "657bb740-a71b-4529-a012-528021c31a92",
-// 	"Status": 3
-// }
-
 const schema = z.object({
   VideoLibraryId: z.number(),
   VideoGuid: z.string(),
@@ -32,23 +25,57 @@ export async function POST(request: NextRequest) {
   if (status === "finished" || status === "failed") {
     const videoFromBunny = await getVideoFromBunny(videoGuid);
     console.log(videoFromBunny);
-    //get the video from the database
-    const video = await prisma.recordRequest.findFirst({
-      where: { requestId: videoFromBunny.title },
-    });
-
-    if (!video) {
-      console.log("Video not found in database");
-      return NextResponse.json(
-        { error: "Video not found in database" },
-        { status: 404 }
-      );
-    } else {
-      //update the video status
-      await prisma.recordRequest.update({
-        where: { id: video.id },
-        data: { status: status, bsOriginalVideoId: videoGuid },
+   if (videoFromBunny.title.indexOf("merged-") !== -1) {
+      console.log("merged video found in bunny");
+      const requestId = videoFromBunny.title.replace("merged-", "");
+      const mergedVideo = await prisma.recordRequest.findFirst({
+        where: { requestId: requestId },
       });
+      if (mergedVideo) {
+        console.log("merged video found in database");
+        await prisma.recordRequest.update({
+          where: { id: mergedVideo.id },
+          data: {
+            status: "merged-upload-finished",
+            bsReactionVideoId: videoGuid,
+          },
+        });
+      }
+    } else  if (videoFromBunny.title.indexOf("reaction-") !== -1) {
+      console.log("reaction video found in bunny");
+      const requestId = videoFromBunny.title.replace("reaction-", "");
+      const reactionVideo = await prisma.recordRequest.findFirst({
+        where: { requestId: requestId },
+      });
+      if (reactionVideo) {
+        console.log("reaction video found in database");
+        await prisma.recordRequest.update({
+          where: { id: reactionVideo.id },
+          data: {
+            status: "reaction-upload-finished",
+            bsReactionVideoId: videoGuid,
+          },
+        });
+      }
+    } else {
+      console.log("original video found in bunny");
+      const originalVideo = await prisma.recordRequest.findFirst({
+        where: { requestId: videoFromBunny.title },
+      });
+      if (originalVideo) {
+        console.log("original video found in database");
+        await prisma.recordRequest.update({
+          where: { id: originalVideo.id },
+          data: {
+            status: "original-upload-finished",
+            bsOriginalVideoId: videoGuid,
+          },
+        });
+      } else
+        return NextResponse.json(
+          { error: "Video not found in database" },
+          { status: 404 }
+        );
     }
   }
 
