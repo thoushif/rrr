@@ -36,10 +36,10 @@ const Dashboard: React.FC = () => {
   }, []);
 
   // Group requests by status
-  const completedRequests = requests.filter(req => req.status === "completed");
+  const completedRequests = requests.filter(req => req.status === "finished");
   const failedRequests = requests.filter(req => req.status === "failed");
   const inProgressRequests = requests.filter(
-    req => req.status !== "completed" && req.status !== "failed"
+    req => req.status !== "completed" && req.status !== "finished"
   );
 
   return (
@@ -49,7 +49,7 @@ const Dashboard: React.FC = () => {
          </Button>
       <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
       
-      <Accordion type="single" defaultValue="completed" collapsible className="w-full">
+      <Accordion type="single" defaultValue="finished" collapsible className="w-full">
         {/* Completed Section */}
         <AccordionItem value="completed">
           <AccordionTrigger className="text-lg font-semibold">
@@ -147,7 +147,12 @@ const RequestCard: React.FC<{ request: RecordRequest }> = ({ request }) => {
          <div className="flex flex-col gap-4">
             <p className="text-sm text-gray-500">{request.status}</p>
           {/* if the status is completed, show the reaction video */}
-          {request.status === "completed" && request.bsReactionVideoId && (
+          <h2>Original</h2>
+          {request.status === "finished" && request.bsOriginalVideoId && (
+            <VideoPlayer url={`https://iframe.mediadelivery.net/embed/391358/${request.bsOriginalVideoId}`} autoplay={false}/>
+          )}
+          <h2>Your Reaction</h2>
+          {request.status === "reacted" && request.bsReactionVideoId && (
             <VideoPlayer url={`https://iframe.mediadelivery.net/embed/391358/${request.bsReactionVideoId}`} autoplay={false}/>
           )}
         </div>
@@ -160,7 +165,7 @@ const RequestCard: React.FC<{ request: RecordRequest }> = ({ request }) => {
 
 const RenderingStatus: React.FC<{ status: string }> = ({ status }) => {
   return (
-     <div className={`w-4 h-4 rounded-full ${status === "completed" ? "bg-green-500" : status === "failed" ? "bg-red-500" : "bg-yellow-500"}`}></div>
+     <div className={`w-4 h-4 rounded-full ${status === "finished" ? "bg-green-500" : status === "failed" ? "bg-red-500" : "bg-yellow-500"}`}></div>
   );
 };
 

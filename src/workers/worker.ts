@@ -41,13 +41,29 @@ const videoWorker = new Worker(
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
+    // const ffmpeg = spawn("ffmpeg", [
+    //   "-i",
+    //   originalVideo, // First input video
+    //   "-i",
+    //   reactionVideo, // Second input video
+    //   "-filter_complex",
+    //   "[0:v]scale=1280:720[main];[1:v]scale=320:240[pip];[main][pip]overlay=W-w-10:H-h-10", // Scale main video to 720p, PiP to 320x240, position at bottom-right
+    //   "-c:v",
+    //   "libx264", // Use H.264 codec
+    //   "-preset",
+    //   "fast", // Encoding preset
+    //   "-crf",
+    //   "23", // Quality setting (lower = better quality, higher file size)
+    //   outputPath, // Output file path
+    // ]);
+    const height = 420
     const ffmpeg = spawn("ffmpeg", [
       "-i",
       originalVideo, // First input video
       "-i",
       reactionVideo, // Second input video
       "-filter_complex",
-      "[0:v]scale=1280:720[main];[1:v]scale=320:240[pip];[main][pip]overlay=W-w-10:H-h-10", // Scale main video to 720p, PiP to 320x240, position at bottom-right
+      `[0:v]scale=1280:${height}[main];[1:v]scale=1280:${height}[reaction];[main][reaction]vstack`, // Scale both videos to specified height and stack vertically
       "-c:v",
       "libx264", // Use H.264 codec
       "-preset",

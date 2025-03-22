@@ -5,7 +5,7 @@ if (typeof window === "undefined") {
 }
 
 const BUNNY_API_KEY = process.env.BUNNY_API_KEY!;
-const BUNNY_LIBRARY_ID = process.env.BUNNY_LIBRARY_ID!;
+const BUNNY_LIBRARY_ID = process.env.NEXT_PUBLIC_BUNNY_LIBRARY_ID!;
 const BUNNY_UPLOAD_URL = `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos`;
 
 export async function createBunnyVideo(requestId: string) {

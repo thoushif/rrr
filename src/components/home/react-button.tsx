@@ -3,10 +3,10 @@ import React from "react";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { useSource } from "@/context/source";
-import { waitForVideoStatusInDB } from "@/lib/bunny";
+import { generatePlaybackUrl, waitForVideoStatusInDB } from "@/lib/bunny";
+import ReactLoader from "./react-loader";
 
 const dbCheck = async (initialUrl: string, userId: string) => {
-  let requestId = undefined;
   const payload = {
     initialUrl: initialUrl,
     userId: userId,
@@ -18,19 +18,18 @@ const dbCheck = async (initialUrl: string, userId: string) => {
     },
     body: JSON.stringify(payload),
   });
-  console.log("respose", response)
+  console.log("respose", response);
   if (response.ok) {
     const data = await response.json();
-    requestId = data?.data?.requestId;
-    console.log("req... inside the db check",requestId)
-    return requestId;
-  }else{
-    throw Error("db check errror")
+    console.log("req... inside the db check", data);
+    return data?.data;
+  } else {
+    throw Error("db check errror");
   }
 };
 
-const bunnyCheck = async (initialUrl: string, requestId: string) => {
-  let playbackUrl;
+const bunnyCheckAndUpload = async (initialUrl: string, requestId: string) => {
+  let videoId;
   const payload = {
     requestId: requestId,
   };
@@ -41,12 +40,12 @@ const bunnyCheck = async (initialUrl: string, requestId: string) => {
     },
     body: JSON.stringify(payload),
   });
-  console.log("verified in bunny")
+  console.log("verified in bunny");
   if (response.ok) {
     const data = await response.json();
-    console.log("verified in bunny, ",data)
-    playbackUrl = data?.playbackUrl;
-  }else if(response.status == 404){ 
+    console.log("verified in bunny, ", data);
+    videoId = data?.videoId;
+  } else if (response.status == 404) {
     const uploadPayload = {
       initialUrl,
       requestId,
@@ -58,21 +57,24 @@ const bunnyCheck = async (initialUrl: string, requestId: string) => {
       },
       body: JSON.stringify(uploadPayload),
     });
-    if(uploadResponse.ok){
-      const data =  await uploadResponse.json()
-      return data?.playbackUrl;
+    if (uploadResponse.ok) {
+      const data = await uploadResponse.json();
+      return data?.videoId;
     }
   }
-  return playbackUrl;
+  return videoId;
 };
 
-const processVideo = async (
-  initialUrl: string,
-  userId: string,
-) => {
-  const requestId = await dbCheck(initialUrl, userId);
-  const playbackUrl = await bunnyCheck(initialUrl, requestId);
-  return {playbackUrl, requestId}
+const processVideo = async (initialUrl: string, userId: string) => {
+  const dbData = await dbCheck(initialUrl, userId);
+  const requestId = dbData?.requestId;
+  if (dbData?.bsOriginalVideoId) {
+    const playbackUrl = generatePlaybackUrl(dbData?.bsOriginalVideoId);
+    return { playbackUrl, requestId };
+  }
+  const videoId = await bunnyCheckAndUpload(initialUrl, requestId);
+  const playbackUrl = generatePlaybackUrl(videoId);
+  return { playbackUrl, requestId };
 };
 
 const ReactButton = () => {
@@ -82,7 +84,7 @@ const ReactButton = () => {
     originalVideoDownloadtatus,
     setOriginalVideoDownloadtatus,
     setRequestId,
-    setPlaybackUrl
+    setPlaybackUrl,
   } = useSource();
   const disableReactButton =
     (!initialUrl && originalVideoDownloadtatus !== "pristine") ||
@@ -91,15 +93,15 @@ const ReactButton = () => {
     // Handle the click event here
     setOriginalVideoDownloadtatus("processing");
     console.log("React button clicked!");
-    const {playbackUrl, requestId} = await processVideo(initialUrl, "userid");
-    console.log("after processVideo", playbackUrl, requestId)
+    const { playbackUrl, requestId } = await processVideo(initialUrl, "userid");
+    console.log("after processVideo", playbackUrl, requestId);
     if (playbackUrl) {
       const uploadComplete = await waitForVideoStatusInDB(requestId);
       if (uploadComplete) {
-        setPlaybackUrl(playbackUrl)
-        setRequestId(requestId)
+        setPlaybackUrl(playbackUrl);
+        setRequestId(requestId);
         setOriginalVideoDownloadtatus("ready");
-        // router.push("/home");
+        router.push("/home");
       } else {
         setOriginalVideoDownloadtatus("failed");
       }
@@ -109,9 +111,13 @@ const ReactButton = () => {
   };
 
   return (
-    <Button onClick={handleReactClick} disabled={!disableReactButton}>
-      React to this
-    </Button>
+    <>
+      <Button onClick={handleReactClick} disabled={!disableReactButton}>
+        React to this
+      </Button>
+
+      <ReactLoader />
+    </>
   );
 };
 

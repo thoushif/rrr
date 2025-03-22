@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     const { guid: videoId } = await createBunnyVideo(requestId);
     await uploadVideoToBunny(videoId, videoPath);
     return NextResponse.json(
-      { message: "Video file upload started..", playbackUrl:generatePlaybackUrl(videoId) },
+      { message: "Video file upload started..", videoId },
       { status: 200 }
     );
   } catch (e) {

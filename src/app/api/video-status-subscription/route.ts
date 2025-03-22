@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       //update the video status
       await prisma.recordRequest.update({
         where: { id: video.id },
-        data: { status: status },
+        data: { status: status, bsOriginalVideoId: videoGuid },
       });
     }
   }

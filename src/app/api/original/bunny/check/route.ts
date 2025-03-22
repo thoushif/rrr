@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { generatePlaybackUrl, listVideosInLibrary } from "@/lib/bunny";
+import {  listVideosInLibrary } from "@/lib/bunny";
 
 
 export async function POST(req: Request) {
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
         {
           success: true,
           requestId,
-          playbackUrl: generatePlaybackUrl(video.guid),
+          videoId: video.guid,
         },
         { status: 200 }
       );
